@@ -1,10 +1,10 @@
 ---
 id: TASK-1.1
 title: Создать GitHub-репозиторий метапакета ojson
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-02-17 20:24'
-updated_date: '2026-02-17 21:20'
+updated_date: '2026-02-17 21:21'
 labels:
   - metapackage
   - setup
@@ -28,10 +28,10 @@ parent_task_id: TASK-1
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Репозиторий создан на GitHub в организации ojson-platform
-- [ ] #2 Локальный git-репо `/Users/3y3k0/doctools/ojson` имеет настроенный remote origin
-- [ ] #3 Ветка master запушена в remote
-- [ ] #4 `.gitignore` включает `node_modules/`
+- [x] #1 Репозиторий создан на GitHub в организации ojson-platform
+- [x] #2 Локальный git-репо `/Users/3y3k0/doctools/ojson` имеет настроенный remote origin
+- [x] #3 Ветка master запушена в remote
+- [x] #4 `.gitignore` включает `node_modules/`
 <!-- AC:END -->
 
 ## Implementation Plan

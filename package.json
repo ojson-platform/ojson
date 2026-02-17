@@ -1,0 +1,19 @@
+{
+  "name": "@ojson/ojson",
+  "version": "1.0.0",
+  "description": "Meta-package for ojson platform development",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.30.0",
+  "scripts": {
+    "bootstrap": "scripts/bootstrap.sh",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "check-submodules": "scripts/check-submodules.sh",
+    "add-submodules": "scripts/add-submodules.sh"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=10.0.0"
+  }
+}
