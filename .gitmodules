@@ -1,0 +1,15 @@
+[submodule "packages/http"]
+	path = packages/http
+	url = git@github.com:ojson-platform/http.git
+[submodule "packages/models"]
+	path = packages/models
+	url = git@github.com:ojson-platform/models.git
+[submodule "packages/services"]
+	path = packages/services
+	url = git@github.com:ojson-platform/services.git
+[submodule "packages/openapi"]
+	path = packages/openapi
+	url = git@github.com:ojson-platform/openapi.git
+[submodule "packages/server"]
+	path = packages/server
+	url = git@github.com:ojson-platform/server.git
