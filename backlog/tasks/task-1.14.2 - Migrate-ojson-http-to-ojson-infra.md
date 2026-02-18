@@ -1,10 +1,10 @@
 ---
 id: TASK-1.14.2
 title: Migrate @ojson/http to @ojson/infra
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-02-18 15:27'
-updated_date: '2026-02-18 20:56'
+updated_date: '2026-02-18 21:46'
 labels:
   - devops
   - metapackage
@@ -38,18 +38,18 @@ High-level steps:
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `packages/http` uses infra-managed configs:
+- [x] #1 `packages/http` uses infra-managed configs:
   - `eslint.config.js` re-exports `@ojson/infra/eslint`
   - `prettier.config.js` re-exports `@ojson/infra/prettier`
   - `vitest.config.mjs` re-exports `@ojson/infra/vitest`
   - `tsconfig.json` extends `@ojson/infra/tsconfig/base` (no Bundler)
-- [ ] #2 Conflicting legacy configs are removed (at minimum): `.prettierrc.json`, `vitest.config.ts`.
-- [ ] #3 Infra scaffolding creates/updates agent docs:
+- [x] #2 Conflicting legacy configs are removed (at minimum): `.prettierrc.json`, `vitest.config.ts`.
+- [x] #3 Infra scaffolding creates/updates agent docs:
   - `.agents/*` present
   - `AGENTS.md` contains/updates the managed block between `<!-- OJSON_INFRA_AGENTS:BEGIN -->` and `<!-- OJSON_INFRA_AGENTS:END -->`
-- [ ] #4 No new CI workflow is introduced by infra (specifically: no `.github/workflows/ci.yml` is added).
-- [ ] #5 `packages/http/package.json` devDependencies are cleaned up: toolchain deps now provided by `@ojson/infra` are removed; `@ojson/infra` is added as `workspace:*`.
-- [ ] #6 From `packages/http` directory, scripts succeed:
+- [x] #4 No new CI workflow is introduced by infra (specifically: no `.github/workflows/ci.yml` is added).
+- [x] #5 `packages/http/package.json` devDependencies are cleaned up: toolchain deps now provided by `@ojson/infra` are removed; `@ojson/infra` is added as `workspace:*`.
+- [x] #6 From `packages/http` directory, scripts succeed:
   - `pnpm -s run lint`
   - `pnpm -s run format:check`
   - `pnpm -s run test:units:fast`
@@ -89,3 +89,18 @@ Notes / constraints:
 - CI/workflows: infra should not introduce `.github/workflows/ci.yml` (CI is handled separately in `TASK-1.14.9`).
 - Repo boundaries: `packages/http` is a git submodule; the migration requires commits inside the submodule repo, then updating the metapackage pointer.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+- `@ojson/http` migrated to `@ojson/infra` (configs + tool runners).
+- TypeScript keeps extensionless imports in source and uses `ts-patch` transformer during compilation.
+- CI/workflows were not modified by infra scaffolding.
+
+Verification (from `packages/http`):
+- `pnpm -s run lint`
+- `pnpm -s run format:check`
+- `pnpm -s run test:units:fast`
+- `pnpm -s run test:types`
+- `pnpm -s run build`
+<!-- SECTION:FINAL_SUMMARY:END -->
