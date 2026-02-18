@@ -4,7 +4,7 @@ title: Migrate @ojson/http to @ojson/infra
 status: To Do
 assignee: []
 created_date: '2026-02-18 15:27'
-updated_date: '2026-02-18 19:32'
+updated_date: '2026-02-18 20:56'
 labels:
   - devops
   - metapackage
@@ -21,125 +21,71 @@ parent_task_id: TASK-1.14
 <!-- SECTION:DESCRIPTION:BEGIN -->
 Migrate `packages/http` to use `@ojson/infra` configs and tool runners.
 
-Steps:
-- Remove/rename conflicting files: `eslint.config.js`, `.prettierrc.json` (or other prettier configs), `vitest.config.ts`.
-- Add `@ojson/infra` as devDependency (`workspace:*`).
+Chosen migration mode: **Variant B** (apply `ojson-infra init` with `--force`).
+
+Decisions:
+- Keep `.agents/*` managed by infra — OK.
+- Do **not** scaffold CI from infra: no `.github/workflows/ci.yml` should appear.
+- `tsconfig.json` must extend `@ojson/infra/tsconfig/base` (drop the current Bundler-based setup).
+
+High-level steps:
+- Remove conflicting local configs so only infra-managed configs remain (`.prettierrc*`, `vitest.config.ts`, etc.).
+- Add `@ojson/infra` as devDependency (`workspace:*`) and remove duplicated toolchain devDeps.
 - Run in `packages/http`: `pnpm exec ojson-infra init --yes --force`.
-- Verify in `packages/http`:
-  - `pnpm exec eslint src`
-  - `pnpm exec prettier --check "src/**/*.ts"`
-  - `pnpm exec vitest --run`
-  - optionally `pnpm exec tsc --noEmit`
-- Decide whether to keep migration or revert and document.
+- Ensure `package.json` scripts still work (and don't point to removed config filenames).
+- Verify scripts and commit inside the `packages/http` submodule repo.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `packages/http` uses `@ojson/infra` via `eslint.config.js`, `prettier.config.js`, `vitest.config.mjs` (and optionally `tsconfig.json` extends).
-- [ ] #2 `packages/http` no longer carries duplicated tool deps that are now supplied by `@ojson/infra` (unless explicitly justified).
-- [ ] #3 All verification commands pass from `packages/http` directory.
+- [ ] #1 `packages/http` uses infra-managed configs:
+  - `eslint.config.js` re-exports `@ojson/infra/eslint`
+  - `prettier.config.js` re-exports `@ojson/infra/prettier`
+  - `vitest.config.mjs` re-exports `@ojson/infra/vitest`
+  - `tsconfig.json` extends `@ojson/infra/tsconfig/base` (no Bundler)
+- [ ] #2 Conflicting legacy configs are removed (at minimum): `.prettierrc.json`, `vitest.config.ts`.
+- [ ] #3 Infra scaffolding creates/updates agent docs:
+  - `.agents/*` present
+  - `AGENTS.md` contains/updates the managed block between `<!-- OJSON_INFRA_AGENTS:BEGIN -->` and `<!-- OJSON_INFRA_AGENTS:END -->`
+- [ ] #4 No new CI workflow is introduced by infra (specifically: no `.github/workflows/ci.yml` is added).
+- [ ] #5 `packages/http/package.json` devDependencies are cleaned up: toolchain deps now provided by `@ojson/infra` are removed; `@ojson/infra` is added as `workspace:*`.
+- [ ] #6 From `packages/http` directory, scripts succeed:
+  - `pnpm -s run lint`
+  - `pnpm -s run format:check`
+  - `pnpm -s run test:units:fast`
+  - `pnpm -s run test:types`
+  - `pnpm -s run build`
 <!-- AC:END -->
 
 ## Implementation Plan
 
 <!-- SECTION:PLAN:BEGIN -->
-## Final Implementation Plan (Cascading ESLint Strategy)
+### Plan (Variant B)
 
-### Strategy Decisions
-- ✅ **TypeScript**: ESNext+NodeNext everywhere  
-- ✅ **Transformers**: Move to global infra with `tspc` instead of `tsc`
-- ✅ **ESLint Restrictions**: Use cascading configs - base in root, restrictions in `src/`
-
-### Enhanced Infrastructure Strategy
-
-#### Phase 1: Infrastructure Enhancement
-1. **Update @ojson/infra**:
-   - Add `ts-patch` to devDependencies
-   - Create shared `extensions.js` transformer export  
-   - Update default `tsconfig.base.json` to ESNext+NodeNext
-   - Add `tspc` binary wrapper
-
-2. **Cascading ESLint Configuration System**:
-   ```
-   @ojson/infra exports:
-   └── eslint/
-       ├── base.config.mjs         # Standard ESLint (root level)
-       └── with-restrictions.config.mjs  # Additional rules for with-* modules
-   ```
-
-#### Phase 2: Cascading Configuration Implementation
-**Root `eslint.config.js`** (from @ojson/infra):
-```javascript
-export default [
-  baseConfig,  // Standard rules for all files
-  
-  // Module restrictions for packages with with-* patterns
-  {
-    files: ['src/**/*'],  // Only source files, not tests
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        { patterns: ['../with-*/**/*', '!../with-*'] }
-      ]
-    }
-  }
-];
-```
-
-**Package-specific override option**:
-- Packages can create `src/eslint.config.js` with restrictions
-- Or detect and auto-generate during scaffolding
-
-#### Phase 3: Package Analysis & Auto-detection
-**Scaffolding Logic**:
-```javascript
-// Detect if package has with-* modules
-const hasWithModules = await glob('./src/with-*');
-if (hasWithModules.length > 0) {
-  // Add restrictions config
-  await writeFile('src/eslint.config.js', restrictionsConfig);
-}
-```
-
-#### Phase 4: Global Packages Assessment
-**Apply restrictions to**:
-- ✅ **@ojson/http** (5 with-* modules) 
-- ✅ **@ojson/services** (1 with-* module)
-- ✅ **@ojson/models** (already has, migrate to cascading)
-- ❌ **@ojson/server** (no with-* modules)
-- ❌ **@ojson/openapi** (no with-* modules)
-
-#### Phase 5: HTTP Package Migration (Primary Task)
-1. **Backup current configs**
-2. **Add @ojson/infra** with `workspace:*`
-3. **Install enhanced infra** with ts-patch support
-4. **Apply cascading ESLint**:
-   - Root config from @ojson/infra/base
-   - Create `src/eslint.config.js` with restrictions (detected automatically)
-5. **Use ESNext+NodeNext tsconfig**
-6. **Evaluate transformer need** (scan for extensionless imports)
-7. **Run migration**: `ojson-infra init --auto-detect`
-8. **Verify all tools work**:
-   - `pnpm exec eslint src` (should apply cascading rules)
-   - `pnpm exec prettier --check "src/**/*.ts"`
-   - `pnpm exec vitest --run`
-   - `pnpm exec tspc --noEmit`
-
-#### Phase 6: Documentation & Migration Guide
-- Document cascading ESLint pattern
-- Create migration guide for other packages
-- Update scaffolding to auto-detect with-* modules
-
-### Benefits of Cascading Approach
-1. **Clean separation**: Base rules vs architectural restrictions
-2. **Flexibility**: Easy to enable/disable per package
-3. **Auto-detection**: CLI can detect with-* modules automatically
-4. **Maintainability**: Restrictions concentrated in one place
-5. **Scalability**: Easy to add other package-specific overrides
-
-### Expected Outcomes
-- **Standardized base configs** across all packages
-- **Optional architectural restrictions** where needed
-- **Flexible transformer support** for modular packages
-- **Clear separation of concerns** in configuration
+- Prepare `packages/http`:
+  - Remove conflicting configs: `.prettierrc*`, `vitest.config.ts` (and any other non-infra configs that would still be discovered by tools).
+  - Keep existing `.github/workflows/*` intact.
+- Update `packages/http/package.json`:
+  - Add `@ojson/infra` to `devDependencies` as `workspace:*`.
+  - Remove duplicated toolchain devDependencies (`eslint`, `prettier`, `vitest`, `typescript`, and related plugins) that are now provided by `@ojson/infra`.
+  - Ensure scripts still call the tools by name (no hard-coded removed config filenames).
+- Run scaffolding (from `packages/http`):
+  - `pnpm exec ojson-infra init --yes --force`
+- Verify (from `packages/http`):
+  - `pnpm -s run lint`
+  - `pnpm -s run format:check`
+  - `pnpm -s run test:units:fast`
+  - `pnpm -s run test:types`
+  - `pnpm -s run build`
+- Commit in the `packages/http` submodule repo; then update the metapackage submodule pointer commit.
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Notes / constraints:
+- `ojson-infra init --force` overwrites managed files; avoid running `init` without `--force` first, otherwise you may get “skipped but applied” state in `.infra.json`.
+- TypeScript: we intentionally drop the current Bundler-based `tsconfig.json` in favor of the infra base preset. If compilation fails, prefer adding minimal overrides on top of `extends` (while keeping `extends: "@ojson/infra/tsconfig/base"`).
+- CI/workflows: infra should not introduce `.github/workflows/ci.yml` (CI is handled separately in `TASK-1.14.9`).
+- Repo boundaries: `packages/http` is a git submodule; the migration requires commits inside the submodule repo, then updating the metapackage pointer.
+<!-- SECTION:NOTES:END -->
