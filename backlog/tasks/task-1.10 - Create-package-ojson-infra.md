@@ -1,10 +1,10 @@
 ---
 id: TASK-1.10
 title: Create package @ojson/infra
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-02-17 21:09'
-updated_date: '2026-02-18 14:58'
+updated_date: '2026-02-18 17:15'
 labels:
   - metapackage
   - devops
@@ -57,15 +57,15 @@ export { default } from '@ojson/infra/vitest';
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `@ojson/infra` published on npm (or available via workspace linking)
-- [ ] #2 ESLint config for TypeScript is used via `@ojson/infra/eslint`
-- [ ] #3 Prettier config available via `@ojson/infra/prettier`
-- [ ] #4 TypeScript presets: `@ojson/infra/tsconfig/base`, `@ojson/infra/tsconfig/build`, `@ojson/infra/tsconfig/test`
-- [ ] #5 Vitest config available via `@ojson/infra/vitest` and includes basic coverage
-- [ ] #6 All exports described in `package.json` via `exports` field
-- [ ] #7 Package has README with setup examples for each tool
-- [ ] #8 Scaffolding: CLI (e.g. `init` or `add`) creates or updates config files, base workflows (e.g. CI), and common agents parts (e.g. .cursor, .agents, AGENTS.md) in the current package
-- [ ] #9 `devops/infra` is a git submodule (own repo, entry in `.gitmodules`), same as packages/*
+- [x] #1 `@ojson/infra` published on npm (or available via workspace linking)
+- [x] #2 ESLint config for TypeScript is used via `@ojson/infra/eslint`
+- [x] #3 Prettier config available via `@ojson/infra/prettier`
+- [x] #4 TypeScript presets: `@ojson/infra/tsconfig/base`, `@ojson/infra/tsconfig/build`, `@ojson/infra/tsconfig/test`
+- [x] #5 Vitest config available via `@ojson/infra/vitest` and includes basic coverage
+- [x] #6 All exports described in `package.json` via `exports` field
+- [x] #7 Package has README with setup examples for each tool
+- [x] #8 Scaffolding: CLI (e.g. `init` or `add`) creates or updates config files, base workflows (e.g. CI), and common agents parts (e.g. .cursor, .agents, AGENTS.md) in the current package
+- [x] #9 `devops/infra` is a git submodule (own repo, entry in `.gitmodules`), same as packages/*
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -197,6 +197,14 @@ export { default } from '@ojson/infra/vitest';
 Decision update (2026-02-18): goal of `@ojson/infra` is explicitly "one devDependency" for consumers. We observed `pnpm exec prettier` may be missing when `prettier` is only a transitive dependency of `@ojson/infra` (even though it's installed). To make tool execution reliable, we created subtask TASK-1.10.10 to ship tool runner binaries via `bin` overrides (requested: expose `eslint`, `prettier`, `vitest`, `tsc` as bins implemented by Node wrappers inside `@ojson/infra`).
 
 Research note: pnpm bin name collisions exist. In an experiment where consumer had both a direct `prettier` devDependency and another direct package exporting a `prettier` bin, the `prettier` bin resolved to the real `prettier` package. This is acceptable if we treat infra overrides as primarily for the infra-only install, and document that direct tool deps may take precedence.
+
+Validation (2026-02-18): `devops/infra` is now a git submodule pointing to `git@github.com:ojson-platform/infra.git` (commit `a9d0988...`), `.gitmodules` contains the entry, and `git submodule update --init devops/infra` works.
+
+Validation: workspace linking works (from metapackage root, `pnpm -r list --depth 0` shows `@ojson/infra@1.0.0` at `devops/infra`). This satisfies AC#1 without npm publishing.
+
+Validation: `@ojson/infra` exports are present in `devops/infra/package.json` (`./eslint`, `./prettier`, `./vitest`, `./tsconfig/*`) and README exists with setup examples for ESLint/Prettier/TS/Vitest (plus scaffolding and tool runners).
+
+Validation: scaffolding CLI exists (`ojson-infra init`) and tool runner binaries are provided via `bin` overrides (`eslint`, `prettier`, `vitest`, `tsc`, `tsserver`) to support the one-devDependency model.
 <!-- SECTION:NOTES:END -->
 
 ## Subtasks
