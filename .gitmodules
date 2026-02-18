@@ -13,3 +13,6 @@
 [submodule "packages/server"]
 	path = packages/server
 	url = git@github.com:ojson-platform/server.git
+[submodule "devops/infra"]
+	path = devops/infra
+	url = git@github.com:ojson-platform/infra.git
