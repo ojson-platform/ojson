@@ -24,6 +24,15 @@ These guides cover:
 
 You MUST read the overview resource to understand the complete workflow. The information is NOT summarized here.
 
+**Task language:** Create and edit Backlog.md tasks in **English** (titles, descriptions, acceptance criteria, implementation plans). Do not use Russian for task content.
+
 </CRITICAL_INSTRUCTION>
 
 <!-- BACKLOG.MD MCP GUIDELINES END -->
+
+## Metapackage
+
+This repo is a **metapackage**: each package under `packages/` is a separate Git repository (git submodule) and can be cloned and developed standalone. The root uses **pnpm** (`pnpm install`, `pnpm run bootstrap`, `pnpm run check-submodules`, etc.).
+
+For detailed structure, packages, dependencies, and metapackage vs monorepo, see **[.agents/core.md](.agents/core.md)**.
+

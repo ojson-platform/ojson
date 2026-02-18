@@ -1,5 +1,6 @@
 node_modules/
 .nx/
+.pnpm-store/
 build/
 dist/
 coverage/
