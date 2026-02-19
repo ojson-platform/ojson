@@ -1,9 +1,10 @@
 ---
 id: TASK-1.14.3
 title: Migrate @ojson/models to @ojson/infra
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-02-18 15:27'
+updated_date: '2026-02-19 01:23'
 labels:
   - devops
   - metapackage
@@ -25,8 +26,8 @@ Follow TASK-1.14 procedure: remove conflicting configs, add `@ojson/infra` devDe
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `packages/models` uses `@ojson/infra` configs (re-exports / extends) with any package-specific additions layered locally.
-- [ ] #2 Verification commands pass from `packages/models` directory.
+- [x] #1 `packages/models` uses `@ojson/infra` configs (re-exports / extends) with any package-specific additions layered locally.
+- [x] #2 Verification commands pass from `packages/models` directory.
 <!-- AC:END -->
 
 ## Research Notes (current state)
@@ -68,3 +69,26 @@ Verification commands (from `packages/models`):
 - `pnpm -s run test:types`
 - `pnpm -s run build`
 <!-- SECTION:PLAN:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Migration completed:
+- Configs moved to `@ojson/infra`:
+  - `eslint.config.js` uses `@ojson/infra/eslint` (+ local override for `__tests__` files to disable type-aware parsing)
+  - `prettier.config.js` re-exports `@ojson/infra/prettier`
+  - `vitest.config.mjs` layers on top of `@ojson/infra/vitest` while keeping `examples/**/*.spec.ts`
+- TypeScript:
+  - `tsconfig.json` extends `@ojson/infra/tsconfig/base`
+  - Build keeps extensionless imports via infra transformer (`@ojson/infra/lib/transformer.mjs`)
+  - `__tests__` sources are excluded from build compilation
+- Toolchain devDependencies removed in favor of `@ojson/infra` runners; `@types/node` kept as a direct devDependency for TS.
+- Infra scaffolding applied (`ojson-infra init`) to create `.agents/*`, `.infra.json`, and managed section in `AGENTS.md`.
+
+Verification (from `packages/models`):
+- `pnpm -s run lint`
+- `pnpm -s run format:check`
+- `pnpm -s run test:units:fast`
+- `pnpm -s run test:types`
+- `pnpm -s run build`
+<!-- SECTION:FINAL_SUMMARY:END -->
